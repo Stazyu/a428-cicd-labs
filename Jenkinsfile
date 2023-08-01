@@ -1,20 +1,23 @@
-pipeline {
-    agent {
+node {
+    agent{
         docker {
-            image 'node:16-buster-slim' 
-            args '-p 3000:3000' 
+            label'mydockeragent' // this is optional and can be used to identify your container in
+            image 'node:16-buster-slim'
+            args '-p 3000:3000'
         }
     }
-    stages {
-        stage('Build') { 
-            steps {
-                sh 'npm install' 
-            }
+    stage('Build') {
+        try {
+            sh 'npm install'
         }
-        stage('Test') {
-            steps {
-                sh './jenkins/scripts/test.sh'
-            }
+        catch (exc) {
+            echo 'Something failed!'
+            throw
+        }
+    }
+    stage('Test') {
+        try {
+            sh './jenkins/scripts/test.sh'
         }
     }
 }

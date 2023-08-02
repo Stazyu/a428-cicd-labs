@@ -1,23 +1,27 @@
-node {
-    agent{
+pipeline {
+    agent {
         docker {
-            label'mydockeragent' // this is optional and can be used to identify your container in
-            image 'node:16-buster-slim'
+            image 'node:lts-buster-slim'
             args '-p 3000:3000'
         }
     }
-    stage('Build') {
-        try {
-            sh 'npm install'
+    stages {
+        stage('Build') {
+            steps {
+                sh 'npm install'
+            }
         }
-        catch (exc) {
-            echo 'Something failed!'
-            throw
+        stage('Test') {
+            steps {
+                sh './jenkins/scripts/test.sh'
+            }
         }
-    }
-    stage('Test') {
-        try {
-            sh './jenkins/scripts/test.sh'
+        stage('Deploy') {
+            steps {
+                sh './jenkins/scripts/deliver.sh'
+                input message: 'Sudah selesai menggunakan React App? (Klik "Proceed" untuk mengakhiri)'
+                sh './jenkins/scripts/kill.sh'
+            }
         }
     }
 }
